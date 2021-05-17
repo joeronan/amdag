@@ -8,10 +8,10 @@ function App() {
   const [newContent, setNewContent] = React.useState('')
 
   const updateList = () => {
-    fetch('/todo', { method: 'GET' }).then(res => {
+    fetch('/graph', { method: 'GET' }).then(res => {
       return (res.json())
     }).then(data => {
-      setTodoList(data.tasks)
+      setTodoList(data.elements)
     })
   }
 
