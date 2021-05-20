@@ -1,42 +1,42 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import ViewGraph from './view-graph';
+import ViewIntervals from './view-intervals';
+import ViewAdjacent from './view-adjacent';
 
 function App() {
 
-  const [todoList, setTodoList] = React.useState([])
+  const [viewType, setViewType] = React.useState('graph')
+  const [selectedElement, setSelectedElement] = React.useState(1)
   const [newContent, setNewContent] = React.useState('')
 
-  const updateList = () => {
-    fetch('/graph', { method: 'GET' }).then(res => {
-      return (res.json())
-    }).then(data => {
-      setTodoList(data.elements)
-    })
-  }
 
-  React.useEffect(updateList, [])
+  const handleViewType = () => {
+    switch (viewType) {
+      case 'graph':
+        return <ViewGraph selectedElement={selectedElement} setSelectedElement={setSelectedElement} />
+
+      case 'intervals':
+        return <ViewIntervals selectedElement={selectedElement} setSelectedElement={setSelectedElement} />
+
+      case 'adjacent':
+        return <ViewAdjacent selectedElement={selectedElement} setSelectedElement={setSelectedElement} />
+
+      default:
+        return <div>Invalid viewType</div>
+    }
+  }
 
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
 
         <form onSubmit={async e => {
           e.preventDefault()
           const entry = { content: newContent }
-          const response = await fetch('/todo', {
+          const response = await fetch('/element', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -44,7 +44,6 @@ function App() {
             body: JSON.stringify(entry)
           })
 
-          updateList()
           setNewContent('')
 
           if (response.ok) {
@@ -54,28 +53,13 @@ function App() {
           <input type="text" value={newContent} onChange={e => setNewContent(e.target.value)} />
           <input type="submit" value="Add Task" />
         </form>
-        <ul>
-          {todoList.map(element =>
-            <li key={element.id}>
-              {element.date_created} {element.id}: {element.content}
-              <button onClick={
-                async e => {
-                  const entry = { id: element.id }
-                  const response = await fetch('/todo', {
-                    method: 'DELETE',
-                    headers: {
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(entry)
-                  })
 
-                  if (response.ok) {
-                    console.log('Deleted!')
-                    setTodoList(todoList.filter(x => x.id !== element.id))
-                  }
-                }}>X</button>
-            </li>)}
-        </ul>
+        <button onClick={() => { setViewType('graph') }}>Graph</button>
+        <button onClick={() => { setViewType('intervals') }}>Intervals</button>
+        <button onClick={() => { setViewType('adjacent') }}>Adjacent</button>
+
+        {handleViewType()}
+
       </header>
     </div>
   );

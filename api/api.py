@@ -1,5 +1,4 @@
 from datetime import datetime
-import re
 from flask import Flask, request, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
@@ -55,7 +54,7 @@ def _get_upper_interval(element: Element, upper_interval: list):
 
 
 def get_upper_interval(element: Element):
-    _get_upper_interval(element, [])
+    return _get_upper_interval(element, [])
 
 
 def _get_lower_interval(element: Element, lower_interval: list):
@@ -68,7 +67,7 @@ def _get_lower_interval(element: Element, lower_interval: list):
 
 
 def get_lower_interval(element: Element):
-    _get_lower_interval(element, [])
+    return _get_lower_interval(element, [])
 
 
 # API request handlers
@@ -114,8 +113,7 @@ def element_handler():
             return 'There was an issue with your post task'
 
     elif request.method == 'GET':
-        element_dict = request.get_json()
-        element = Element.query.get(element_dict['id'])
+        element = Element.query.get(request.args.get('id'))
 
         return jsonify(element.to_dict())
 
@@ -134,15 +132,17 @@ def element_handler():
 @app.route('/subgraph', methods=['GET'])
 def subgraph_handler():
     if request.method == 'GET':
-        request_dict = request.get_json()
-        element = Element.query.get(request_dict['id'])
+        subgraph_type = request.args.get('type')
+        element = Element.query.get(request.args.get('id'))
 
-        if request_dict['type'] == 'upper':
+        if subgraph_type == 'upper':
             subgraph = get_upper_interval(element)
-        elif request_dict['type'] == 'lower':
+        elif subgraph_type == 'lower':
             subgraph = get_lower_interval(element)
         else:
-            return 'There was an issue with deleting your element'
+            return 'Invalid subgraph type'
+
+        print(f'Here it is: {subgraph}')
 
         return jsonify({'elements': [x.to_dict() for x in subgraph]})
 
