@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import ViewGraph from './view-graph';
 import ViewIntervals from './view-intervals';
@@ -10,12 +9,13 @@ function App() {
   const [viewType, setViewType] = React.useState('graph')
   const [selectedElement, setSelectedElement] = React.useState(1)
   const [newContent, setNewContent] = React.useState('')
+  const [graph, setGraph] = React.useState([])
 
 
   const handleViewType = () => {
     switch (viewType) {
       case 'graph':
-        return <ViewGraph selectedElement={selectedElement} setSelectedElement={setSelectedElement} />
+        return <ViewGraph selectedElement={selectedElement} setSelectedElement={setSelectedElement} graph={graph} setGraph={setGraph} />
 
       case 'intervals':
         return <ViewIntervals selectedElement={selectedElement} setSelectedElement={setSelectedElement} />
@@ -30,9 +30,13 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-
+      <div style={{
+        width: '40vw',
+        position: 'absolute',
+        left: 0,
+        padding: '20px 20px 20px 20px',
+        overflowY: 'auto'
+      }}>
         <form onSubmit={async e => {
           e.preventDefault()
           const entry = { content: newContent }
@@ -58,9 +62,41 @@ function App() {
         <button onClick={() => { setViewType('intervals') }}>Intervals</button>
         <button onClick={() => { setViewType('adjacent') }}>Adjacent</button>
 
-        {handleViewType()}
+        {graph.filter((element) => element.id === selectedElement).map((element) => {
+          return <div>
+            <p>ID: {element.id} </p>
+            <p>Created: {element.date_created} </p>
+            <p>Last Edited: {element.date_edited} </p>
+            <p>{element.content}</p>
+            <p>Delete: <button onClick={
+              async e => {
+                const entry = { id: element.id }
+                const response = await fetch('/element', {
+                  method: 'DELETE',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(entry)
+                })
+                if (response.ok) {
+                  console.log('Deleted!')
+                  setGraph(graph.filter(x => x.id !== element.id))
+                }
+              }}>X</button></p>
+          </div>
+        })}
+      </div>
 
-      </header>
+      <div style={{
+        width: '60vw',
+        height: '100vh',
+        position: 'absolute',
+        right: 0,
+        overflow: 'hidden',
+        borderLeft: '3px solid black'
+      }}>
+        {handleViewType()}
+      </div>
     </div>
   );
 }

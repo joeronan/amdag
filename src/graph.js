@@ -17,7 +17,7 @@ function Graph({ width, height, graph, setSelectedElement }) {
       scaleYMax={4}
     >
       {zoom => (
-        <div style={{ border: '10px solid black' }}>
+        <div>
           <svg
             width={width}
             height={height}
@@ -66,7 +66,7 @@ function Graph({ width, height, graph, setSelectedElement }) {
               {graph.map(element => {
                 return (<>
                   <circle cx={element.x} cy={element.y} r='20' fill='hotpink' onClick={() => { handleClick(element.id) }} />
-                  <text x={element.x} y={element.y - 25} fill='hotpink'>{element.id}</text>
+                  <text className='not-selectable' x={element.x} y={element.y - 25} fill='hotpink'>{element.id}</text>
                   {element.children.map(child => {
                     const childElement = graph.filter((element) => element.id === child)[0]
                     return (
