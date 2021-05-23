@@ -5,7 +5,14 @@ import { localPoint } from '@visx/event';
 
 function Graph({ width, height, graph, selectedElement, setSelectedElement, newPoint, setNewPoint, setEditMode }) {
 
-  const handleElementClick = (e, elementId) => {
+  const [dragging, setDragging] = React.useState(0)
+
+  const handleElementMouseDown = (e, elementId) => {
+    setDragging(elementId)
+  }
+
+  const handleElementMouseUp = (e, elementId) => {
+    setDragging(0)
     setNewPoint({ active: false, x: 0, y: 0 })
     setEditMode(false)
     if (e.metaKey) {
@@ -26,20 +33,41 @@ function Graph({ width, height, graph, selectedElement, setSelectedElement, newP
       }
     } else {
       setSelectedElement(elementId)
-
     }
   }
 
-  const handleBackgroundMouseDown = (e, zoom) => {
-    if (e.metaKey) {
+  const handleBackgroundMouseUp = (e, zoom) => {
+    if (dragging) {
       const point = localPoint(e)
       point.x = Math.round((point.x - zoom.transformMatrix.translateX) / zoom.transformMatrix.scaleX / 10) * 10
       point.y = Math.round((point.y - zoom.transformMatrix.translateY) / zoom.transformMatrix.scaleY / 10) * 10
 
-      setSelectedElement(0)
-      setNewPoint({ active: true, x: point.x, y: point.y })
+      const entry = { id: dragging, x: point.x, y: point.y }
+      fetch('/element', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(entry)
+      })
+        .then(response => {
+          if (response.ok) {
+            console.log('PLACEHOLDER')
+          }
+        })
+      setDragging(0)
+
     } else {
-      zoom.dragStart(e)
+      if (e.metaKey) {
+        const point = localPoint(e)
+        point.x = Math.round((point.x - zoom.transformMatrix.translateX) / zoom.transformMatrix.scaleX / 10) * 10
+        point.y = Math.round((point.y - zoom.transformMatrix.translateY) / zoom.transformMatrix.scaleY / 10) * 10
+
+        setSelectedElement(0)
+        setNewPoint({ active: true, x: point.x, y: point.y })
+      } else {
+        zoom.dragEnd(e)
+      }
     }
   }
 
@@ -86,22 +114,25 @@ function Graph({ width, height, graph, selectedElement, setSelectedElement, newP
               width={width}
               height={height}
               fill="transparent"
-              onTouchStart={(e) => { handleBackgroundMouseDown(e, zoom) }}
+              // onTouchStart={(e) => { handleBackgroundMouseDown(e, zoom) }}
+              onTouchStart={zoom.dragStart}
               onTouchMove={zoom.dragMove}
-              onTouchEnd={zoom.dragEnd}
-              onMouseDown={(e) => { handleBackgroundMouseDown(e, zoom) }}
+              // onTouchEnd={zoom.dragEnd}
+              onTouchEnd={(e) => { handleBackgroundMouseUp(e, zoom) }}
+              // onMouseDown={(e) => { handleBackgroundMouseDown(e, zoom) }}
+              onMouseDown={zoom.dragStart}
               onMouseMove={zoom.dragMove}
-              onMouseUp={zoom.dragEnd}
+              // onMouseUp={zoom.dragEnd}
+              onMouseUp={(e) => { handleBackgroundMouseUp(e, zoom) }}
               onMouseLeave={() => {
                 if (zoom.isDragging) zoom.dragEnd();
               }}
-              style={{ cursor: zoom.isDragging ? 'grabbing' : 'grab' }}
+              style={{ cursor: zoom.isDragging ? 'grabbing' : 'default' }}
             />
             <g transform={zoom.toString()}>
 
               {graph.map(element => {
                 return (<>
-                  <circle cx={element.x} cy={element.y} r='20' fill='hotpink' onClick={(e) => { handleElementClick(e, element.id) }} />
                   {element.children.map(child => {
                     const childElement = graph.filter((element) => element.id === child)[0]
                     return (
@@ -111,7 +142,13 @@ function Graph({ width, height, graph, selectedElement, setSelectedElement, newP
                 </>)
               })}
 
-              {newPoint.active && <circle cx={newPoint.x} cy={newPoint.y} r='20' fill='hotpink' opacity='0.66'></circle>}
+              {graph.map(element => {
+                return (<>
+                  <circle cx={element.x} cy={element.y} r='20' fill='hotpink' onMouseDown={(e) => { handleElementMouseDown(e, element.id) }} onMouseUp={(e) => { handleElementMouseUp(e, element.id) }} />
+                </>)
+              })}
+
+              {newPoint.active && <circle cx={newPoint.x} cy={newPoint.y} r='20' fill='hotpink' opacity='0.66' />}
 
               {graph.map(element => {
                 return (<>
@@ -121,8 +158,9 @@ function Graph({ width, height, graph, selectedElement, setSelectedElement, newP
             </g>
           </svg>
         </div>
-      )}
-    </Zoom>
+      )
+      }
+    </Zoom >
   )
 }
 

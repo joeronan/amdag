@@ -5,6 +5,10 @@ body {
   margin: 0;
 }
 
+circle {
+  cursor: pointer; 
+}
+
 button {
   background-color: whitesmoke;
   border: 1px solid black;

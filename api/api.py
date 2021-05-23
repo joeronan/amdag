@@ -104,6 +104,8 @@ def element_handler():
         element_dict = request.get_json()
         element = Element.query.get(element_dict['id'])
 
+        print(element.header)
+
         element.header = element_dict.get('header', element.header)
         element.content = element_dict.get('content', element.content)
         element.x = element_dict.get('x', element.x)
