@@ -154,8 +154,6 @@ def subgraph_handler():
         else:
             return 'Invalid subgraph type'
 
-        print(f'Here it is: {subgraph}')
-
         return jsonify({'elements': [x.to_dict() for x in subgraph]})
 
 

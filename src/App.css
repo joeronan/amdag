@@ -5,6 +5,33 @@ body {
   margin: 0;
 }
 
+button {
+  background-color: whitesmoke;
+  border: 1px solid black;
+  margin: 0px 5px 5px 5px;
+  font-family: monospace;
+}
+
+input {
+  background-color: whitesmoke;
+  border: 1px solid black;
+  margin: 0px 5px 5px 5px;
+  font-family: monospace;
+}
+
+.input-text {
+  background-color: rgb(220, 220, 220);
+  border: 1px solid black;
+  width: 80%;
+  margin: 0;
+}
+
+textarea {
+  background-color: rgb(220, 220, 220);
+  border: 1px solid black;
+  width: 100%;
+}
+
 .not-selectable {
   -webkit-user-select: none;
   -moz-user-select: none;

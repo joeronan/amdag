@@ -7,11 +7,11 @@ import ViewAdjacent from './view-adjacent';
 function App() {
 
   const [viewType, setViewType] = React.useState('graph')
+  const [graph, setGraph] = React.useState([])
   const [selectedElement, setSelectedElement] = React.useState(1)
   const [newContent, setNewContent] = React.useState('')
   const [newHeader, setNewHeader] = React.useState('')
   const [newPoint, setNewPoint] = useState({ active: false, x: 0, y: 0 })
-  const [graph, setGraph] = React.useState([])
   const [editMode, setEditMode] = React.useState(false)
 
   React.useEffect(() => {
@@ -39,7 +39,7 @@ function App() {
   return (
     <div className="App">
       <div style={{
-        width: '40vw',
+        width: 'calc(40vw - 40px)',
         position: 'absolute',
         left: 0,
         padding: '20px 20px 20px 20px',
@@ -54,7 +54,7 @@ function App() {
         {selectedElement && graph.filter((element) => element.id === selectedElement).map((element) => {
           if (!editMode) {
             return <>
-              <p>Header: {element.header} </p>
+              <p>{element.header} </p>
               <p>ID: {element.id} </p>
               <p>Created: {element.date_created} </p>
               <p>Last Edited: {element.date_edited} </p>
@@ -69,9 +69,9 @@ function App() {
             return <>
               <form onSubmit={async e => {
                 e.preventDefault()
-                const entry = { header: newHeader, content: newContent, x: newPoint.x, y: newPoint.y }
+                const entry = { id: selectedElement, header: newHeader, content: newContent }
                 fetch('/element', {
-                  method: 'POST',
+                  method: 'PUT',
                   headers: {
                     'Content-Type': 'application/json'
                   },
@@ -86,11 +86,11 @@ function App() {
                 setNewHeader('')
                 setNewPoint({ active: false, x: 0, y: 0 })
               }}>
-                <p>Header: <input type="text" value={newHeader} onChange={e => setNewHeader(e.target.value)} /></p>
+                <p><input className="input-text" type="text" value={newHeader} onChange={e => setNewHeader(e.target.value)} /></p>
                 <p>ID: {element.id} </p>
                 <p>Created: {element.date_created} </p>
                 <p>Last Edited: {element.date_edited} </p>
-                <p><input type="text" value={newContent} onChange={e => setNewContent(e.target.value)} /></p>
+                <p><textarea rows="10" value={newContent} onChange={e => setNewContent(e.target.value)} /></p>
                 <p>Save: <input type="submit" value="S" /></p>
               </form>
               <p>Cancel: <button onClick={() => { setEditMode(!editMode) }}>C</button></p>
@@ -105,7 +105,7 @@ function App() {
                     body: JSON.stringify(entry)
                   })
                   if (response.ok) {
-                    setGraph(graph.filter(x => x.id !== element.id).map(x => x.parents.filter(y => y != element.id)))
+                    setGraph(graph.filter(x => x.id !== element.id).map(x => x.parents.filter(y => y !== element.id)))
                   }
                 }}>X</button></p>
             </>
@@ -131,8 +131,8 @@ function App() {
             setNewHeader('')
             setNewPoint({ active: false, x: 0, y: 0 })
           }}>
-            <p>Header: <input type="text" value={newHeader} onChange={e => setNewHeader(e.target.value)} /></p>
-            <p>Content:<input type="text" value={newContent} onChange={e => setNewContent(e.target.value)} /></p>
+            <p>Header: <input className="input-text" type="text" value={newHeader} onChange={e => setNewHeader(e.target.value)} /></p>
+            <p>Content:<textarea rows="10" value={newContent} onChange={e => setNewContent(e.target.value)} /></p>
             <input type="submit" value="Add Element" />
           </form>
         </>}
