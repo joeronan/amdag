@@ -8,7 +8,7 @@ function App() {
 
   const [viewType, setViewType] = React.useState('graph')
   const [graph, setGraph] = React.useState([])
-  const [selectedElement, setSelectedElement] = React.useState(1)
+  const [selectedElement, setSelectedElement] = React.useState(-1)
   const [newContent, setNewContent] = React.useState('')
   const [newHeader, setNewHeader] = React.useState('')
   const [newPoint, setNewPoint] = useState({ active: false, x: 0, y: 0 })
@@ -19,6 +19,20 @@ function App() {
     setNewHeader('')
   }, [newPoint])
 
+  React.useEffect((e) => {
+    function handleEsc(e) {
+      if (e.key === "Escape") {
+        if (editMode) {
+          setEditMode(false)
+        } else {
+          setSelectedElement(-1)
+        }
+      }
+    }
+    window.addEventListener('keydown', handleEsc);
+
+    return () => { window.removeEventListener('keydown', handleEsc); };
+  }, [editMode])
 
   const handleViewType = () => {
     switch (viewType) {
@@ -52,6 +66,7 @@ function App() {
         <button onClick={() => { setViewType('adjacent') }}>Adjacent</button>
 
         {selectedElement && graph.filter((element) => element.id === selectedElement).map((element) => {
+
           if (!editMode) {
             return <>
               <p>{element.header} </p>
