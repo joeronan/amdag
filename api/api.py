@@ -18,12 +18,12 @@ adjacency = db.Table(
 
 class Element(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # header = db.Column(db.String(200), nullable=False)
-    content = db.Column(db.String(200), nullable=False)
+    header = db.Column(db.Text, nullable=False)
+    content = db.Column(db.Text, nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     date_edited = db.Column(db.DateTime, default=datetime.utcnow)
-    # x = db.Column(db.Integer, default=0)
-    # y = db.Column(db.Integer, default=0)
+    x = db.Column(db.Integer, default=0)
+    y = db.Column(db.Integer, default=0)
     children = db.relationship('Element',
                                secondary=adjacency,
                                primaryjoin=id == adjacency.c.parent_id,
@@ -36,11 +36,14 @@ class Element(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'header': self.header,
             'content': self.content,
             'date_created': self.date_created,
             'date_edited': self.date_edited,
             'parents': [x.id for x in self.parents],
-            'children': [x.id for x in self.children]
+            'x': self.x,
+            'y': self.y,
+            'children': [x.id for x in self.children],
         }
 
 
@@ -80,7 +83,10 @@ def get_lower_interval(element: Element):
 def element_handler():
     if request.method == 'POST':
         element_dict = request.get_json()
-        element = Element(content=element_dict['content'])
+        element = Element(header=element_dict['header'],
+                          content=element_dict['content'],
+                          x=element_dict['x'],
+                          y=element_dict['y'])
 
         for parent in element_dict.get('parents', []):
             element.parents.append(Element.query.get(parent))
@@ -90,7 +96,7 @@ def element_handler():
         try:
             db.session.add(element)
             db.session.commit()
-            return 'Done', 201
+            return jsonify({'id': element.id}), 201
         except:
             return 'There was an issue with your post task'
 
@@ -98,14 +104,17 @@ def element_handler():
         element_dict = request.get_json()
         element = Element.query.get(element_dict['id'])
 
-        element.content = element_dict['content']
+        element.header = element_dict.get('header', element.header)
+        element.content = element_dict.get('content', element.content)
+        element.x = element_dict.get('x', element.x)
+        element.y = element_dict.get('y', element.y)
 
         for parent in element_dict.get('parents', []):
             if parent not in [x.id for x in element.parents]:
                 element.parents.append(Element.query.get(parent))
         for child in element_dict.get('children', []):
-            if parent not in [x.id for x in element.parents]:
-                element.parents.append(Element.query.get(child))
+            if child not in [x.id for x in element.children]:
+                element.children.append(Element.query.get(child))
 
         element.edited = datetime.utcnow
 
@@ -153,6 +162,6 @@ def subgraph_handler():
 @app.route('/graph', methods=['GET'])
 def graph_handler():
     if request.method == 'GET':
-        graph = Element.query.order_by(Element.date_created).all()
+        graph = Element.query.order_by(Element.id).all()
 
         return jsonify({'elements': [x.to_dict() for x in graph]})

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import ViewGraph from './view-graph';
 import ViewIntervals from './view-intervals';
@@ -9,13 +9,21 @@ function App() {
   const [viewType, setViewType] = React.useState('graph')
   const [selectedElement, setSelectedElement] = React.useState(1)
   const [newContent, setNewContent] = React.useState('')
+  const [newHeader, setNewHeader] = React.useState('')
+  const [newPoint, setNewPoint] = useState({ active: false, x: 0, y: 0 })
   const [graph, setGraph] = React.useState([])
+  const [editMode, setEditMode] = React.useState(false)
+
+  React.useEffect(() => {
+    setNewContent('')
+    setNewHeader('')
+  }, [newPoint])
 
 
   const handleViewType = () => {
     switch (viewType) {
       case 'graph':
-        return <ViewGraph selectedElement={selectedElement} setSelectedElement={setSelectedElement} graph={graph} setGraph={setGraph} />
+        return <ViewGraph selectedElement={selectedElement} setSelectedElement={setSelectedElement} graph={graph} setGraph={setGraph} newPoint={newPoint} setNewPoint={setNewPoint} setEditMode={setEditMode} />
 
       case 'intervals':
         return <ViewIntervals selectedElement={selectedElement} setSelectedElement={setSelectedElement} />
@@ -37,54 +45,97 @@ function App() {
         padding: '20px 20px 20px 20px',
         overflowY: 'auto'
       }}>
-        <form onSubmit={async e => {
-          e.preventDefault()
-          const entry = { content: newContent }
-          const response = await fetch('/element', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(entry)
-          })
 
-          setNewContent('')
-
-          if (response.ok) {
-            console.log('Response worked!')
-          }
-        }}>
-          <input type="text" value={newContent} onChange={e => setNewContent(e.target.value)} />
-          <input type="submit" value="Add Task" />
-        </form>
 
         <button onClick={() => { setViewType('graph') }}>Graph</button>
         <button onClick={() => { setViewType('intervals') }}>Intervals</button>
         <button onClick={() => { setViewType('adjacent') }}>Adjacent</button>
 
-        {graph.filter((element) => element.id === selectedElement).map((element) => {
-          return <div>
-            <p>ID: {element.id} </p>
-            <p>Created: {element.date_created} </p>
-            <p>Last Edited: {element.date_edited} </p>
-            <p>{element.content}</p>
-            <p>Delete: <button onClick={
-              async e => {
-                const entry = { id: element.id }
-                const response = await fetch('/element', {
-                  method: 'DELETE',
+        {selectedElement && graph.filter((element) => element.id === selectedElement).map((element) => {
+          if (!editMode) {
+            return <>
+              <p>Header: {element.header} </p>
+              <p>ID: {element.id} </p>
+              <p>Created: {element.date_created} </p>
+              <p>Last Edited: {element.date_edited} </p>
+              <p>{element.content}</p>
+              <p>Edit: <button onClick={() => {
+                setEditMode(!editMode)
+                setNewHeader(element.header)
+                setNewContent(element.content)
+              }}>E</button></p>
+            </>
+          } else {
+            return <>
+              <form onSubmit={async e => {
+                e.preventDefault()
+                const entry = { header: newHeader, content: newContent, x: newPoint.x, y: newPoint.y }
+                fetch('/element', {
+                  method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'
                   },
                   body: JSON.stringify(entry)
                 })
-                if (response.ok) {
-                  console.log('Deleted!')
-                  setGraph(graph.filter(x => x.id !== element.id))
-                }
-              }}>X</button></p>
-          </div>
+                  .then(response => (response.json()))
+                  .then(data => { setSelectedElement(data.id) })
+
+                setEditMode(!editMode)
+
+                setNewContent('')
+                setNewHeader('')
+                setNewPoint({ active: false, x: 0, y: 0 })
+              }}>
+                <p>Header: <input type="text" value={newHeader} onChange={e => setNewHeader(e.target.value)} /></p>
+                <p>ID: {element.id} </p>
+                <p>Created: {element.date_created} </p>
+                <p>Last Edited: {element.date_edited} </p>
+                <p><input type="text" value={newContent} onChange={e => setNewContent(e.target.value)} /></p>
+                <p>Save: <input type="submit" value="S" /></p>
+              </form>
+              <p>Cancel: <button onClick={() => { setEditMode(!editMode) }}>C</button></p>
+              <p>Delete: <button onClick={
+                async e => {
+                  const entry = { id: element.id }
+                  const response = await fetch('/element', {
+                    method: 'DELETE',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(entry)
+                  })
+                  if (response.ok) {
+                    setGraph(graph.filter(x => x.id !== element.id).map(x => x.parents.filter(y => y != element.id)))
+                  }
+                }}>X</button></p>
+            </>
+          }
         })}
+        {!selectedElement && <>
+          <p>New Element</p>
+
+          <form onSubmit={async e => {
+            e.preventDefault()
+            const entry = { header: newHeader, content: newContent, x: newPoint.x, y: newPoint.y }
+            fetch('/element', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(entry)
+            })
+              .then(response => (response.json()))
+              .then(data => { setSelectedElement(data.id) })
+
+            setNewContent('')
+            setNewHeader('')
+            setNewPoint({ active: false, x: 0, y: 0 })
+          }}>
+            <p>Header: <input type="text" value={newHeader} onChange={e => setNewHeader(e.target.value)} /></p>
+            <p>Content:<input type="text" value={newContent} onChange={e => setNewContent(e.target.value)} /></p>
+            <input type="submit" value="Add Element" />
+          </form>
+        </>}
       </div>
 
       <div style={{
