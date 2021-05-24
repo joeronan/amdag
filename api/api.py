@@ -76,6 +76,12 @@ def get_lower_interval(element: Element):
     return _get_lower_interval(element, [])
 
 
+def valid_dag(new_parent: Element, new_child: Element):
+    if new_parent in get_lower_interval(new_child):
+        return False
+    return True
+
+
 # API request handlers
 
 
@@ -89,9 +95,17 @@ def element_handler():
                           y=element_dict['y'])
 
         for parent in element_dict.get('parents', []):
-            element.parents.append(Element.query.get(parent))
+            parent_element = Element.query.get(parent)
+            if valid_dag(parent_element, element):
+                element.parents.append(parent_element)
+            else:
+                return 'Not valid DAG', 400
         for child in element_dict.get('children', []):
-            element.parents.append(Element.query.get(child))
+            child_element = Element.query.get(child)
+            if valid_dag(element, child_element):
+                element.children.append(child_element)
+            else:
+                return 'Not valid DAG', 400
 
         try:
             db.session.add(element)
@@ -110,15 +124,23 @@ def element_handler():
         element.y = element_dict.get('y', element.y)
 
         for parent in element_dict.get('parents', []):
+            parent_element = Element.query.get(parent)
             if parent not in [x.id for x in element.parents]:
-                element.parents.append(Element.query.get(parent))
+                if valid_dag(parent_element, element):
+                    element.parents.append(parent_element)
+                else:
+                    return 'Not valid DAG', 400
             else:
-                element.parents.remove(Element.query.get(parent))
+                element.parents.remove(parent_element)
         for child in element_dict.get('children', []):
+            child_element = Element.query.get(child)
             if child not in [x.id for x in element.children]:
-                element.children.append(Element.query.get(child))
+                if valid_dag(element, child_element):
+                    element.children.append(child_element)
+                else:
+                    return 'Not valid DAG', 400
             else:
-                element.children.remove(Element.query.get(child))
+                element.children.remove(child_element)
 
         element.edited = datetime.utcnow
 
