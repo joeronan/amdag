@@ -5,6 +5,16 @@ body {
   margin: 0;
 }
 
+.split {
+  display: flex;
+  flex-direction: row;
+}
+
+.gutter {
+  background-color: #000;
+  cursor: col-resize;
+}
+
 circle {
   cursor: pointer; 
 }

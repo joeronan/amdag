@@ -101,6 +101,7 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
       {zoom => (
         <div>
           <svg
+            viewBox={`-25 -25 ${width} ${height}`}
             width={width}
             height={height}
             onMouseMove={(e) => { handleMouseMove(e, zoom) }}
