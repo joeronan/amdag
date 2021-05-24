@@ -157,9 +157,9 @@ function App() {
               .then(response => {
                 if (response.ok) {
                   updateGraph()
-                  return response.json()
+                  return response.json().id
                 }
-              }).then(data => { setSelectedElement(data.id) })
+              }).then(data => { if (data) { setSelectedElement(data.id) } else { setSelectedElement(-1) } })
 
             setNewContent('')
             setNewHeader('')

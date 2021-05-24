@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import Flask, request, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
+import math
 
 # Setting up the database
 
@@ -82,6 +83,14 @@ def valid_dag(new_parent: Element, new_child: Element):
     return True
 
 
+def near(point: dict, point_list: list):
+    return any([
+        math.sqrt((test_point['x'] - point['x'])**2 +
+                  (test_point['y'] - point['y'])**2) < 45
+        for test_point in point_list
+    ])
+
+
 # API request handlers
 
 
@@ -93,6 +102,15 @@ def element_handler():
                           content=element_dict['content'],
                           x=element_dict['x'],
                           y=element_dict['y'])
+
+        if near({
+                'x': element_dict['x'],
+                'y': element_dict['y']
+        }, [{
+                'x': e.x,
+                'y': e.y
+        } for e in Element.query.order_by(Element.id).all() if e != element]):
+            return 'Too close to other elements', 400
 
         for parent in element_dict.get('parents', []):
             parent_element = Element.query.get(parent)
@@ -120,8 +138,20 @@ def element_handler():
 
         element.header = element_dict.get('header', element.header)
         element.content = element_dict.get('content', element.content)
-        element.x = element_dict.get('x', element.x)
-        element.y = element_dict.get('y', element.y)
+
+        if near(
+            {
+                'x': element_dict.get('x', element.x),
+                'y': element_dict.get('y', element.y)
+            }, [{
+                'x': e.x,
+                'y': e.y
+            } for e in Element.query.order_by(Element.id).all()
+                if e != element]):
+            return 'Too close to other elements', 400
+        else:
+            element.x = element_dict.get('x', element.x)
+            element.y = element_dict.get('y', element.y)
 
         for parent in element_dict.get('parents', []):
             parent_element = Element.query.get(parent)
