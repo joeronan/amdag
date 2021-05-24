@@ -3,9 +3,19 @@ import { Zoom } from '@visx/zoom';
 import { localPoint } from '@visx/event';
 
 
-function Graph({ width, height, graph, selectedElement, setSelectedElement, newPoint, setNewPoint, setEditMode }) {
+function Graph({ width, height, graph, updateGraph, selectedElement, setSelectedElement, newPoint, setNewPoint, setEditMode }) {
 
   const [dragging, setDragging] = React.useState(0)
+  const [seeDraggingGhost, setSeeDraggingGhost] = React.useState(false)
+  const [hoverPoint, setHoverPoint] = React.useState({ x: 0, y: 0 })
+
+  const handleMouseMove = (e, zoom) => {
+    const point = localPoint(e)
+    point.x = Math.round((point.x - zoom.transformMatrix.translateX) / zoom.transformMatrix.scaleX / 10) * 10
+    point.y = Math.round((point.y - zoom.transformMatrix.translateY) / zoom.transformMatrix.scaleY / 10) * 10
+
+    setHoverPoint({ x: point.x, y: point.y })
+  }
 
   const handleElementMouseDown = (e, elementId) => {
     setDragging(elementId)
@@ -27,7 +37,7 @@ function Graph({ width, height, graph, selectedElement, setSelectedElement, newP
         })
           .then(response => {
             if (response.ok) {
-              graph[graph.indexOf(graph.filter((x) => x.id === selectedElement)[0])].children.push(elementId)
+              updateGraph()
             }
           })
       }
@@ -52,7 +62,7 @@ function Graph({ width, height, graph, selectedElement, setSelectedElement, newP
       })
         .then(response => {
           if (response.ok) {
-            console.log('PLACEHOLDER')
+            updateGraph()
           }
         })
       setDragging(0)
@@ -85,6 +95,7 @@ function Graph({ width, height, graph, selectedElement, setSelectedElement, newP
           <svg
             width={width}
             height={height}
+            onMouseMove={(e) => { handleMouseMove(e, zoom) }}
           >
             <defs>
               <marker id="dot" viewBox="0 0 10 10" refX="25" refY="5"
@@ -114,15 +125,14 @@ function Graph({ width, height, graph, selectedElement, setSelectedElement, newP
               width={width}
               height={height}
               fill="transparent"
-              // onTouchStart={(e) => { handleBackgroundMouseDown(e, zoom) }}
               onTouchStart={zoom.dragStart}
               onTouchMove={zoom.dragMove}
-              // onTouchEnd={zoom.dragEnd}
               onTouchEnd={(e) => { handleBackgroundMouseUp(e, zoom) }}
-              // onMouseDown={(e) => { handleBackgroundMouseDown(e, zoom) }}
               onMouseDown={zoom.dragStart}
-              onMouseMove={zoom.dragMove}
-              // onMouseUp={zoom.dragEnd}
+              onMouseMove={(e) => {
+                zoom.dragMove(e)
+                setSeeDraggingGhost(true)
+              }}
               onMouseUp={(e) => { handleBackgroundMouseUp(e, zoom) }}
               onMouseLeave={() => {
                 if (zoom.isDragging) zoom.dragEnd();
@@ -142,9 +152,23 @@ function Graph({ width, height, graph, selectedElement, setSelectedElement, newP
                 </>)
               })}
 
+              {(dragging !== 0 & seeDraggingGhost) && <>
+                {graph.filter(x => x.id === dragging).map(element => {
+                  return (
+                    <>{element.parents.map(parent => {
+                      const parentElement = graph.filter((element) => element.id === parent)[0]
+                      return (
+                        <line x1={parentElement.x} y1={parentElement.y} x2={hoverPoint.x} y2={hoverPoint.y} stroke='hotpink' markerEnd='url(#dot)' opacity='0.66' />
+                      )
+                    })}</>
+                  )
+                })}
+                <circle onMouseUp={(e) => { handleBackgroundMouseUp(e, zoom) }} cx={hoverPoint.x} cy={hoverPoint.y} r='20' fill='hotpink' opacity='0.66' />
+              </>}
+
               {graph.map(element => {
                 return (<>
-                  <circle cx={element.x} cy={element.y} r='20' fill='hotpink' onMouseDown={(e) => { handleElementMouseDown(e, element.id) }} onMouseUp={(e) => { handleElementMouseUp(e, element.id) }} />
+                  <circle cx={element.x} cy={element.y} r='20' fill='hotpink' onMouseMove={() => { setSeeDraggingGhost(false) }} onMouseDown={(e) => { handleElementMouseDown(e, element.id) }} onMouseUp={(e) => { handleElementMouseUp(e, element.id) }} />
                 </>)
               })}
 

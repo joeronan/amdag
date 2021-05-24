@@ -14,6 +14,16 @@ function App() {
   const [newPoint, setNewPoint] = useState({ active: false, x: 0, y: 0 })
   const [editMode, setEditMode] = React.useState(false)
 
+  const updateGraph = () => {
+    fetch('/graph', { method: 'GET' }).then(res => {
+      return (res.json())
+    }).then(data => {
+      setGraph(data.elements)
+    })
+  }
+
+  React.useEffect(updateGraph, [setGraph])
+
   React.useEffect(() => {
     setNewContent('')
     setNewHeader('')
@@ -26,6 +36,7 @@ function App() {
           setEditMode(false)
         } else {
           setSelectedElement(-1)
+          setNewPoint({ active: false, x: 0, y: 0 })
         }
       }
     }
@@ -37,7 +48,7 @@ function App() {
   const handleViewType = () => {
     switch (viewType) {
       case 'graph':
-        return <ViewGraph selectedElement={selectedElement} setSelectedElement={setSelectedElement} graph={graph} setGraph={setGraph} newPoint={newPoint} setNewPoint={setNewPoint} setEditMode={setEditMode} />
+        return <ViewGraph selectedElement={selectedElement} setSelectedElement={setSelectedElement} graph={graph} updateGraph={updateGraph} newPoint={newPoint} setNewPoint={setNewPoint} setEditMode={setEditMode} />
 
       case 'intervals':
         return <ViewIntervals selectedElement={selectedElement} setSelectedElement={setSelectedElement} />
@@ -61,11 +72,16 @@ function App() {
       }}>
 
 
-        <button onClick={() => { setViewType('graph') }}>Graph</button>
+        {/* <button onClick={() => { setViewType('graph') }}>Graph</button>
         <button onClick={() => { setViewType('intervals') }}>Intervals</button>
-        <button onClick={() => { setViewType('adjacent') }}>Adjacent</button>
+        <button onClick={() => { setViewType('adjacent') }}>Adjacent</button> */}
 
-        {selectedElement && graph.filter((element) => element.id === selectedElement).map((element) => {
+        {selectedElement < 0 && <>
+          <p>Welcome!</p>
+          <p>Click on a DAG to select it. Hold CMD and click on empty space to create a new element. With one element selected, CMD click on another to create a new link.</p>
+        </>}
+
+        {selectedElement !== 0 && graph.filter((element) => element.id === selectedElement).map((element) => {
 
           if (!editMode) {
             return <>
@@ -92,8 +108,7 @@ function App() {
                   },
                   body: JSON.stringify(entry)
                 })
-                  .then(response => (response.json()))
-                  .then(data => { setSelectedElement(data.id) })
+                  .then(response => { if (response.ok) { updateGraph() } })
 
                 setEditMode(!editMode)
 
@@ -120,7 +135,7 @@ function App() {
                     body: JSON.stringify(entry)
                   })
                   if (response.ok) {
-                    setGraph(graph.filter(x => x.id !== element.id).map(x => x.parents.filter(y => y !== element.id)))
+                    updateGraph()
                   }
                 }}>X</button></p>
             </>
@@ -139,8 +154,12 @@ function App() {
               },
               body: JSON.stringify(entry)
             })
-              .then(response => (response.json()))
-              .then(data => { setSelectedElement(data.id) })
+              .then(response => {
+                if (response.ok) {
+                  updateGraph()
+                  return response.json()
+                }
+              }).then(data => { setSelectedElement(data.id) })
 
             setNewContent('')
             setNewHeader('')
