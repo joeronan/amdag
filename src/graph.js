@@ -193,13 +193,13 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
 
               {/* Draw ghosts when making a new element */}
 
-              {newPoint.active && <circle cx={newPoint.x} cy={newPoint.y} r='20' fill='hotpink' opacity='0.66' />}
+              {newPoint.active && <circle cx={newPoint.x} cy={newPoint.y} r='20' fill='hotpink' opacity='0.66' stroke='white' strokeWidth='2' />}
 
               {/* Draw ghosts when holding command key */}
 
               {(commandDown && overElement === 0) && <circle onMouseUp={(e) => { handleBackgroundMouseUp(e, zoom) }} cx={hoverPoint.x} cy={hoverPoint.y} r='20' fill='hotpink' opacity='0.66' />}
 
-              {(commandDown && overElement !== 0 && selectedElement > 0) && <line x1={graph.filter(x => x.id === selectedElement)[0].x} y1={graph.filter(x => x.id === selectedElement)[0].y} x2={graph.filter(x => x.id === overElement)[0].x} y2={graph.filter(x => x.id === overElement)[0].y} stroke='hotpink' markerEnd='url(#dot)' opacity='0.66' />}
+              {(commandDown && overElement !== 0 && selectedElement > 0 && overElement !== selectedElement) && <line x1={graph.filter(x => x.id === selectedElement)[0].x} y1={graph.filter(x => x.id === selectedElement)[0].y} x2={graph.filter(x => x.id === overElement)[0].x} y2={graph.filter(x => x.id === overElement)[0].y} stroke='hotpink' markerEnd='url(#dot)' opacity='0.66' />}
 
               {/* Draw elements */}
 
@@ -210,7 +210,9 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
                     setOverElement(element.id)
                   }}
                     onMouseLeave={() => { setOverElement(0) }}
-                    onMouseDown={(e) => { handleElementMouseDown(e, element.id) }} onMouseUp={(e) => { handleElementMouseUp(e, element.id) }} />
+                    onMouseDown={(e) => { handleElementMouseDown(e, element.id) }}
+                    onMouseUp={(e) => { handleElementMouseUp(e, element.id) }}
+                    stroke='whitesmoke' strokeWidth={selectedElement === element.id ? 2 : 0} />
                 </>)
               })}
 
