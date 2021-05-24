@@ -8,6 +8,8 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
   const [dragging, setDragging] = React.useState(0)
   const [seeDraggingGhost, setSeeDraggingGhost] = React.useState(false)
   const [hoverPoint, setHoverPoint] = React.useState({ x: 0, y: 0 })
+  const [commandDown, setCommandDown] = React.useState(false)
+  const [overElement, setOverElement] = React.useState(0)
 
   const handleMouseMove = (e, zoom) => {
     const point = localPoint(e)
@@ -15,6 +17,11 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
     point.y = Math.round((point.y - zoom.transformMatrix.translateY) / zoom.transformMatrix.scaleY / 10) * 10
 
     setHoverPoint({ x: point.x, y: point.y })
+    if (e.metaKey) {
+      setCommandDown(true)
+    } else {
+      setCommandDown(false)
+    }
   }
 
   const handleElementMouseDown = (e, elementId) => {
@@ -142,16 +149,26 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
             />
             <g transform={zoom.toString()}>
 
+              {/* Draw connections */}
+
               {graph.map(element => {
                 return (<>
                   {element.children.map(child => {
                     const childElement = graph.filter((element) => element.id === child)[0]
-                    return (
-                      <line x1={element.x} y1={element.y} x2={childElement.x} y2={childElement.y} stroke='hotpink' markerEnd='url(#dot)' />
-                    )
+                    if (!(commandDown && overElement === child && selectedElement === element.id)) {
+                      return (
+                        <line x1={element.x} y1={element.y} x2={childElement.x} y2={childElement.y} stroke='hotpink' markerEnd='url(#dot)' />
+                      )
+                    } else {
+                      return (
+                        <line x1={element.x} y1={element.y} x2={childElement.x} y2={childElement.y} stroke='hotpink' markerEnd='url(#dot)' opacity='0.33' />
+                      )
+                    }
                   })}
                 </>)
               })}
+
+              {/* Draw ghost when moving an element */}
 
               {(dragging !== 0 & seeDraggingGhost) && <>
                 {graph.filter(x => x.id === dragging).map(element => {
@@ -174,13 +191,30 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
                 <circle onMouseUp={(e) => { handleBackgroundMouseUp(e, zoom) }} cx={hoverPoint.x} cy={hoverPoint.y} r='20' fill='hotpink' opacity='0.66' />
               </>}
 
+              {/* Draw ghosts when making a new element */}
+
+              {newPoint.active && <circle cx={newPoint.x} cy={newPoint.y} r='20' fill='hotpink' opacity='0.66' />}
+
+              {/* Draw ghosts when holding command key */}
+
+              {(commandDown && overElement === 0) && <circle onMouseUp={(e) => { handleBackgroundMouseUp(e, zoom) }} cx={hoverPoint.x} cy={hoverPoint.y} r='20' fill='hotpink' opacity='0.66' />}
+
+              {(commandDown && overElement !== 0 && selectedElement > 0) && <line x1={graph.filter(x => x.id === selectedElement)[0].x} y1={graph.filter(x => x.id === selectedElement)[0].y} x2={graph.filter(x => x.id === overElement)[0].x} y2={graph.filter(x => x.id === overElement)[0].y} stroke='hotpink' markerEnd='url(#dot)' opacity='0.66' />}
+
+              {/* Draw elements */}
+
               {graph.map(element => {
                 return (<>
-                  <circle cx={element.x} cy={element.y} r='20' fill='hotpink' onMouseMove={() => { setSeeDraggingGhost(false) }} onMouseDown={(e) => { handleElementMouseDown(e, element.id) }} onMouseUp={(e) => { handleElementMouseUp(e, element.id) }} />
+                  <circle cx={element.x} cy={element.y} r='20' fill='hotpink' onMouseMove={() => {
+                    setSeeDraggingGhost(false)
+                    setOverElement(element.id)
+                  }}
+                    onMouseLeave={() => { setOverElement(0) }}
+                    onMouseDown={(e) => { handleElementMouseDown(e, element.id) }} onMouseUp={(e) => { handleElementMouseUp(e, element.id) }} />
                 </>)
               })}
 
-              {newPoint.active && <circle cx={newPoint.x} cy={newPoint.y} r='20' fill='hotpink' opacity='0.66' />}
+              {/* Draw text */}
 
               {graph.map(element => {
                 return (<>
