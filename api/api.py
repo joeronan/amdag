@@ -172,7 +172,7 @@ def element_handler():
             else:
                 element.children.remove(child_element)
 
-        element.edited = datetime.utcnow
+        element.date_edited = datetime.utcnow()
 
         try:
             db.session.commit()

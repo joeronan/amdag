@@ -5,6 +5,52 @@ body {
   margin: 0;
 }
 
+.header {
+  font-size: 1.3rem;
+}
+
+.info {
+  opacity: 0.7;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsla(0, 100%, 100%, 0.05);
+  border-left: 1px hsla(0, 100%, 0%, 0.05) solid;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsla(0, 100%, 100%, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsla(0, 100%, 100%, 0.4);
+}
+
+textarea::-webkit-scrollbar {
+  width: 10px;
+}
+
+textarea::-webkit-scrollbar-track {
+  background: hsla(0, 100%, 100%, 0.05);
+  border-left: 1px hsla(0, 100%, 0%, 0.05) solid;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background: hsla(0, 100%, 0%, 0.3);
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+  background: hsla(0, 100%, 0%, 0.4);
+}
+
+/* Central split bar */
+
 .split {
   display: flex;
   flex-direction: row;
@@ -26,9 +72,7 @@ body {
   animation-duration: 0.2s;
 }
 
-circle {
-  cursor: pointer; 
-}
+/* Forms */
 
 button {
   background-color: whitesmoke;
@@ -55,6 +99,12 @@ textarea {
   background-color: rgb(220, 220, 220);
   border: 1px solid black;
   width: 100%;
+}
+
+/* SVG */
+
+circle {
+  cursor: pointer; 
 }
 
 .not-selectable {
