@@ -95,6 +95,23 @@ function App() {
                 setNewHeader(element.header)
                 setNewContent(element.content)
               }}>E</button></p>
+              <p>Duplicate: <button onClick={() => {
+                const entry = { id: selectedElement, header: element.header, content: element.content, x: element.x + 45, y: element.y, parents: element.parents, children: element.children }
+                fetch('/element', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(entry)
+                })
+                  .then(response => {
+                    if (response.ok) {
+                      updateGraph()
+                      return response.json()
+                    }
+                  }).then(data => { if (data) { setSelectedElement(data.id) } else { setSelectedElement(-1) } })
+
+              }}>D</button></p>
             </>
           } else {
             return <>
@@ -157,7 +174,7 @@ function App() {
               .then(response => {
                 if (response.ok) {
                   updateGraph()
-                  return response.json().id
+                  return response.json()
                 }
               }).then(data => { if (data) { setSelectedElement(data.id) } else { setSelectedElement(-1) } })
 
