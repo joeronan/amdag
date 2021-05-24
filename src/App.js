@@ -66,7 +66,8 @@ function App() {
     <div className="App">
       <Split className="split" gutterSize="3" sizes={[40, 60]}>
         <div style={{
-          padding: '20px 20px 20px 20px',
+          padding: '0px 20px 0px 20px',
+          maxHeight: '100vh',
           overflowY: 'auto'
         }}>
 

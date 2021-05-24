@@ -15,6 +15,17 @@ body {
   cursor: col-resize;
 }
 
+@keyframes example {
+  from {background-color: #000;}
+  to {background-color: #555;}
+}
+
+.gutter:hover {
+  background-color: #555;
+  animation-name: example;
+  animation-duration: 0.2s;
+}
+
 circle {
   cursor: pointer; 
 }
