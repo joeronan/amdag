@@ -89,7 +89,7 @@ function App() {
               <p>ID: {element.id} </p>
               <p>Created: {element.date_created} </p>
               <p>Last Edited: {element.date_edited} </p>
-              <p>{element.content}</p>
+              <p dangerouslySetInnerHTML={{ __html: element.content }}></p>
               <p>Edit: <button onClick={() => {
                 setEditMode(!editMode)
                 setNewHeader(element.header)

@@ -104,8 +104,6 @@ def element_handler():
         element_dict = request.get_json()
         element = Element.query.get(element_dict['id'])
 
-        print(element.header)
-
         element.header = element_dict.get('header', element.header)
         element.content = element_dict.get('content', element.content)
         element.x = element_dict.get('x', element.x)
@@ -114,9 +112,13 @@ def element_handler():
         for parent in element_dict.get('parents', []):
             if parent not in [x.id for x in element.parents]:
                 element.parents.append(Element.query.get(parent))
+            else:
+                element.parents.remove(Element.query.get(parent))
         for child in element_dict.get('children', []):
             if child not in [x.id for x in element.children]:
                 element.children.append(Element.query.get(child))
+            else:
+                element.children.remove(Element.query.get(child))
 
         element.edited = datetime.utcnow
 

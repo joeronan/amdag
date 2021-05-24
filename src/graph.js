@@ -23,10 +23,10 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
 
   const handleElementMouseUp = (e, elementId) => {
     setDragging(0)
-    setNewPoint({ active: false, x: 0, y: 0 })
     setEditMode(false)
     if (e.metaKey) {
-      if (elementId !== selectedElement) {
+      if ((elementId !== selectedElement) && (selectedElement > 0)) {
+        console.log(selectedElement)
         const entry = { id: selectedElement, children: [elementId] }
         fetch('/element', {
           method: 'PUT',
@@ -42,6 +42,7 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
           })
       }
     } else {
+      setNewPoint({ active: false, x: 0, y: 0 })
       setSelectedElement(elementId)
     }
   }
