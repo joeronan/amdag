@@ -160,7 +160,14 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
                       return (
                         <line x1={parentElement.x} y1={parentElement.y} x2={hoverPoint.x} y2={hoverPoint.y} stroke='hotpink' markerEnd='url(#dot)' opacity='0.66' />
                       )
-                    })}</>
+                    })}
+                      {element.children.map(child => {
+                        const childElement = graph.filter((element) => element.id === child)[0]
+                        return (
+                          <line x1={hoverPoint.x} y1={hoverPoint.y} x2={childElement.x} y2={childElement.y} stroke='hotpink' markerEnd='url(#dot)' opacity='0.66' />
+                        )
+                      })}
+                    </>
                   )
                 })}
                 <circle onMouseUp={(e) => { handleBackgroundMouseUp(e, zoom) }} cx={hoverPoint.x} cy={hoverPoint.y} r='20' fill='hotpink' opacity='0.66' />
