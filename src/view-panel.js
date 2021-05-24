@@ -113,8 +113,10 @@ function ViewPanel({ graph, updateGraph, selectedElement, setSelectedElement, ne
       {/* Default text if nothing is selected */}
 
       {selectedElement < 0 && <>
-        <p>Welcome!</p>
-        <p>Placeholder text.</p>
+        <div style={{ margin: '10px 10px 10px 10px', padding: '0px 10px 10px 10px', border: '1px solid rgb(120, 120, 120)' }}>
+          <p>Basic controls:</p>
+          <p>Click on a note to view it. You can move around by dragging the background and by zooming. Drag the notes to move them around. Hold cmd or ctrl and click to create new notes and new connections.</p>
+        </div>
       </>}
 
       {selectedElement !== 0 && graph.filter((element) => element.id === selectedElement).map((element) => {

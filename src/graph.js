@@ -17,7 +17,7 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
     point.y = Math.round((point.y - zoom.transformMatrix.translateY) / zoom.transformMatrix.scaleY / 10) * 10
 
     setHoverPoint({ x: point.x, y: point.y })
-    if (e.metaKey) {
+    if (e.metaKey || e.ctrlKey) {
       setCommandDown(true)
     } else {
       setCommandDown(false)
@@ -31,7 +31,7 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
   const handleElementMouseUp = (e, elementId) => {
     setDragging(0)
     setEditMode(false)
-    if (e.metaKey) {
+    if (e.metaKey || e.ctrlKey) {
       if ((elementId !== selectedElement) && (selectedElement > 0)) {
         console.log(selectedElement)
         const entry = { id: selectedElement, children: [elementId] }
@@ -76,7 +76,7 @@ function Graph({ width, height, graph, updateGraph, selectedElement, setSelected
       setDragging(0)
 
     } else {
-      if (e.metaKey) {
+      if (e.metaKey || e.ctrlKey) {
         const point = localPoint(e)
         point.x = Math.round((point.x - zoom.transformMatrix.translateX) / zoom.transformMatrix.scaleX / 10) * 10
         point.y = Math.round((point.y - zoom.transformMatrix.translateY) / zoom.transformMatrix.scaleY / 10) * 10
