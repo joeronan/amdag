@@ -1,12 +1,16 @@
 from datetime import datetime
-from flask import Flask, request, redirect, jsonify
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import math
+import os
 
 # Setting up the database
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///amdag.db'
+if os.path.isfile('./private.db'):
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///private.db'
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///amdag.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 

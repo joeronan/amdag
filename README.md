@@ -28,12 +28,20 @@ npm start
 
 ## Bonus Setup
 
-If at some later date you wish to create a new database, then you'll need to go to the `api` folder and open up a python terminal and run the following lines:
+If at some later date you wish to create a new database you'll need open `api.py` and replace the lines handling `SQLALCHEMY_DATABASE_URI` with the one below:
+
+```python
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///new_db_name.db'
+```
+
+Next go to the `api` folder and open up a python terminal and run the following lines:
 
 ```python
 from api import *
 db.create_all()
 ```
+
+Your fresh database `new_db_name.db` should be finished and ready to use! If you create one called `private.db` this should be ignored by git and automatically get picked up before `amdag.db`.
 
 ## Technical details
 
