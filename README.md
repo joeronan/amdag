@@ -1,4 +1,4 @@
-<div style="text-align:center"><img src="public/logo384.png" alt="logo" width="80" style="border-radius:25%"/></div>
+<p align="center"><img src="rounded-logo.png" alt="logo" width="80" style="border-radius:25%"/></p>
 
 # AMDAG - Abstract Memory Directed Acyclic Graph
 
